@@ -41,42 +41,6 @@ window.__ModuleLoader__.load({
     //#region locales
     var NS = 'session-dashboard'
 
-    var zh = {
-      panel: '会话',
-      title: '会话',
-      newSession: '新建会话',
-      filters: '会话筛选',
-      // Status vocabulary stays English in every locale (status-only copy is
-      // requested English); the card chrome around it follows the GUI locale.
-      filterAll: 'All',
-      filterNeeds: 'Needs you',
-      filterRunning: 'Running',
-      filterDone: 'Done',
-      loading: '加载中…',
-      empty: '暂无会话',
-      noMatches: '没有匹配的会话',
-      seatsUnavailable: '会话卡片不可用：Session 插件未加载',
-      expand: '展开',
-      collapse: '收起',
-      openSession: '打开会话：{title}',
-      railLabel: 'Sessions: {needs} need you, {running} running, {done} done',
-      statusApproval: 'Waiting for approval',
-      statusPlanReview: 'Plan awaiting review',
-      statusAnswer: 'Waiting for an answer',
-      statusWorkingOn: 'Working on: {task}',
-      statusWorking: 'Working…',
-      statusCompleted: 'Completed · {count} turns',
-      statusCompletedPlain: 'Completed',
-      statusCompletedUnread: 'Completed · {count} turns · unread',
-      statusCompletedUnreadPlain: 'Completed · unread',
-      statusLastTask: 'Last: {task}',
-      statusIdle: 'Idle',
-      timeNow: '现在',
-      timeMinutes: '{n}分',
-      timeHours: '{n}时',
-      timeDays: '{n}天',
-    }
-
     var en = {
       panel: 'Sessions',
       title: 'Sessions',
@@ -135,19 +99,26 @@ window.__ModuleLoader__.load({
       '.dsd-chip-running{color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 15%,transparent)}',
       '.dsd-chip-done{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 15%,transparent)}',
       '.dsd-chip-needs.is-active,.dsd-chip-running.is-active,.dsd-chip-done.is-active{border-color:color-mix(in srgb,currentColor 55%,transparent)}',
-      '.dsd-list{display:flex;flex-direction:column;gap:1px;min-width:0}',
-      '.dsd-row{display:grid;grid-template-columns:16px minmax(0,1fr);gap:7px;align-items:start;width:100%;margin:0;padding:4px 5px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}',
+      '.dsd-list{position:relative;display:flex;flex-direction:column;gap:1px;min-width:0}',
+      '.dsd-row{display:grid;grid-template-columns:16px minmax(0,1fr);gap:7px;align-items:start;width:100%;margin:0;padding:4px 5px;min-height:41px;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}',
+      '.dsd-row-warn{background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 7%,transparent)}',
+      '.dsd-row-running{position:relative;overflow:hidden;background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 7%,transparent)}',
+      '.dsd-row-running::after{content:"";position:absolute;top:0;bottom:0;left:0;width:42%;pointer-events:none;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--dsw-alias-state-business-primary) 16%,transparent),transparent);transform:translateX(-120%);animation:dsd-sweep 2.4s ease-in-out infinite}',
+      '.dsd-row-running > *{position:relative;z-index:1}',
+      '.dsd-row-done{background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 7%,transparent)}',
       '.dsd-row:hover{background:var(--dsw-alias-interactive-bg-hover)}',
       '.dsd-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}',
       '.dsd-status{display:flex;align-items:center;justify-content:center;width:16px;height:16px;margin-top:1px}',
       '.dsd-status svg{display:block}',
       '.dsd-spinner svg{animation:dsd-spin 1s linear infinite}',
       '.dsd-body{min-width:0}',
-      '.dsd-titleline{display:flex;align-items:baseline;gap:6px;min-width:0}',
+      '.dsd-titleline{display:flex;height:17px;align-items:baseline;gap:6px;min-width:0}',
       '.dsd-row-title{display:block;flex:1;min-width:0;font-size:12.5px;line-height:17px;font-weight:500;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.dsd-subtitle{display:block;margin-top:1px;font-size:11px;line-height:15px;color:var(--dsw-alias-label-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-      '.dsd-time{flex:none;font-size:10.5px;line-height:17px;color:var(--dsw-alias-label-tertiary);font-variant-numeric:tabular-nums;white-space:nowrap}',
+      '.dsd-time{flex:none;margin-right:4px;font-size:10.5px;line-height:17px;color:var(--dsw-alias-label-tertiary);font-variant-numeric:tabular-nums;white-space:nowrap}',
       '.dsd-notice{padding:8px 2px;text-align:center;font-size:11px;line-height:16px;color:var(--dsw-alias-label-tertiary)}',
+      '.dsd-notice-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0}',
+      '.dsd-row-filler{visibility:hidden}',
       '.dsd-foot{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:1px;padding:1px 0 0;border:0;background:transparent;color:var(--dsw-alias-label-tertiary);font:inherit;font-size:11px;line-height:16px;cursor:pointer;border-radius:6px}',
       '.dsd-foot:hover{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}',
       '.dsd-foot:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}',
@@ -157,10 +128,11 @@ window.__ModuleLoader__.load({
       '.dsd-badge{position:absolute;top:1px;right:1px;min-width:14px;height:14px;padding:0 3px;border-radius:999px;background:var(--dsw-alias-state-warn-primary);color:var(--dsw-alias-bg-base);font-size:9px;line-height:14px;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}',
       '.dsd-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-success-primary)}',
       '@keyframes dsd-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
+      '@keyframes dsd-sweep{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}',
       // The running glyph is the card's only motion; it keeps spinning even
       // under prefers-reduced-motion because it is the primary state signal
       // requested for active sessions.
-      '@media (prefers-reduced-motion:reduce){.dsd-spinner svg{animation-duration:1.4s}}',
+      '@media (prefers-reduced-motion:reduce){.dsd-spinner svg{animation-duration:1.4s}.dsd-row-running::after{animation-duration:3.6s}}',
     ].join('\n')
 
     function installStyles() {
@@ -488,7 +460,7 @@ window.__ModuleLoader__.load({
       var t = props.t
       return h('button', {
         type: 'button',
-        className: 'dsd-row',
+        className: 'dsd-row dsd-row-' + row.tone,
         title: t('openSession', { title: row.title }),
         'aria-label': t('openSession', { title: row.title }),
         onClick: function () { props.onOpen(row.id) },
@@ -501,6 +473,23 @@ window.__ModuleLoader__.load({
               relativeTimeOf(row.updatedAt, props.now, t)),
           ]),
           h('span', { key: 'subtitle', className: 'dsd-subtitle' }, row.subtitle),
+        ]),
+      ])
+    }
+
+    /**
+     * Invisible row that reserves one list slot, so filtering to a shorter
+     * result keeps the card's height instead of collapsing it.
+     */
+    function FillerRow() {
+      return h('div', { className: 'dsd-row dsd-row-filler', 'aria-hidden': 'true' }, [
+        h('span', { key: 'status', className: 'dsd-status' }),
+        h('span', { key: 'body', className: 'dsd-body' }, [
+          h('span', { key: 'titleline', className: 'dsd-titleline' }, [
+            h('span', { key: 'title', className: 'dsd-row-title' }, '\u00a0'),
+            h('span', { key: 'time', className: 'dsd-time' }, '\u00a0'),
+          ]),
+          h('span', { key: 'subtitle', className: 'dsd-subtitle' }, '\u00a0'),
         ]),
       ])
     }
@@ -652,19 +641,28 @@ window.__ModuleLoader__.load({
         { key: 'done', tone: 'done', label: t('filterDone'), count: counts.done },
       ]
 
+      // Reserve one slot per row the current mode can show, independent of the
+      // active filter, so switching filters never changes the card's height.
+      var slots = Math.min(limit, rows.length)
       var body
       if (loading) {
         body = h('div', { className: 'dsd-notice', role: 'status' }, t('loading'))
-      } else if (shown.length === 0) {
-        body = h('div', { className: 'dsd-notice', role: 'status' },
-          rows.length === 0 ? t('empty') : t('noMatches'))
+      } else if (rows.length === 0) {
+        body = h('div', { className: 'dsd-notice', role: 'status' }, t('empty'))
       } else {
-        body = shown.map(function (row) {
+        var items = shown.map(function (row) {
           return h(CompactRow, { key: row.id, row: row, now: now, t: t, onOpen: onOpen })
         })
+        for (var slot = shown.length; slot < slots; slot += 1) {
+          items.push(h(FillerRow, { key: 'slot-' + slot }))
+        }
+        if (shown.length === 0) {
+          items.unshift(h('div', { key: 'notice', className: 'dsd-notice dsd-notice-overlay', role: 'status' }, t('noMatches')))
+        }
+        body = items
       }
 
-      var expandable = visible.length > LIMIT
+      var expandable = rows.length > LIMIT
       return h('div', { className: 'dsd-root' },
         h('div', { className: 'dsd-card' }, [
           h('div', { key: 'head', className: 'dsd-head' }, [
@@ -728,7 +726,7 @@ window.__ModuleLoader__.load({
       }, 'dsh-session-dashboard: styles')
 
       ctx.effect(function () {
-        return ctx.locale.register(NS, { zh: zh, en: en })
+        return ctx.locale.register(NS, { zh: en, en: en })
       }, 'dsh-session-dashboard: dictionaries')
 
       ctx.slots.inject('sidebar.footer.action', function () {
