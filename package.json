@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-dashboard",
-  "version": "0.3.1",
+  "version": "0.4.3",
   "description": "Always-visible Session status card in the DeepSeek Harness Web GUI left sidebar: recent Sessions, Needs you / Running filters, and one-click navigation.",
   "type": "module",
   "main": "lib/index.js",

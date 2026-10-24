@@ -10,6 +10,7 @@ English | [中文](README.zh.md)
 - One row per session: status glyph, title, current activity (Waiting for approval / Working / Completed unread / Idle) and relative time
 - Filters All / Needs you / Running / Done with live counts; the card keeps the same height when switching filters
 - Click a row to open that session; `+` starts a new session
+- Click the card header (disclosure caret) to collapse or expand it; the collapsed header keeps the current status counts, and the state is remembered in this browser
 - 5 rows by default, expandable to 10
 - Settings → Sessions card section: card language (English / 中文) and default row count
 - Needs-you, running and unread-completed sessions are listed first; running rows have a sweep animation

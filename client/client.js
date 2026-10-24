@@ -74,6 +74,8 @@ window.__ModuleLoader__.load({
       timeHours: '{n}h',
       timeDays: '{n}d',
       settingsTitle: 'Sessions card',
+      collapseCard: 'Collapse',
+      expandCard: 'Expand',
       settingsIntro: 'Sidebar card appearance and behavior.',
       settingsLanguage: 'Language',
       settingsRows: 'Default rows',
@@ -117,6 +119,8 @@ window.__ModuleLoader__.load({
       timeHours: '{n}时',
       timeDays: '{n}天',
       settingsTitle: '会话卡片',
+      collapseCard: '收起',
+      expandCard: '展开',
       settingsIntro: '侧栏卡片的外观与行为。',
       settingsLanguage: '语言',
       settingsRows: '默认条目数',
@@ -148,7 +152,7 @@ window.__ModuleLoader__.load({
     //#region settings store
     var SETTINGS_KEY = 'dsh-session-dashboard/settings/v1'
     var ROW_OPTIONS = [3, 5, 8, 10]
-    var DEFAULT_SETTINGS = { lang: 'en', rows: 5 }
+    var DEFAULT_SETTINGS = { lang: 'en', rows: 5, collapsed: false }
     var settingsListeners = new Set()
 
     function normalizeRows(value) {
@@ -159,12 +163,12 @@ window.__ModuleLoader__.load({
     function readSettings() {
       try {
         var raw = window.localStorage.getItem(SETTINGS_KEY)
-        if (raw === null) return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows }
+        if (raw === null) return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows, collapsed: DEFAULT_SETTINGS.collapsed }
         var parsed = JSON.parse(raw)
         var lang = parsed && parsed.lang === 'zh' ? 'zh' : 'en'
-        return { lang: lang, rows: normalizeRows(parsed && parsed.rows) }
+        return { lang: lang, rows: normalizeRows(parsed && parsed.rows), collapsed: parsed !== null && typeof parsed === 'object' && parsed.collapsed === true }
       } catch (_error) {
-        return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows }
+        return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows, collapsed: DEFAULT_SETTINGS.collapsed }
       }
     }
 
@@ -172,6 +176,7 @@ window.__ModuleLoader__.load({
       var next = Object.assign({}, readSettings(), patch)
       next.rows = normalizeRows(next.rows)
       next.lang = next.lang === 'zh' ? 'zh' : 'en'
+      next.collapsed = next.collapsed === true
       try {
         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
       } catch (_error) {
@@ -209,9 +214,26 @@ window.__ModuleLoader__.load({
       '.dsd-root{width:100%;min-width:0;margin:0 0 8px;box-sizing:border-box}',
       '.dsd-root-rail{width:auto;margin:0}',
       '.dsd-root *{box-sizing:border-box}',
-      '.dsd-card{display:flex;flex-direction:column;gap:7px;width:100%;min-width:0;padding:9px 9px 7px;border:1px solid var(--dsw-alias-border-l1,rgba(255,255,255,.08));border-radius:12px;background:var(--dsw-alias-bg-layer-1,rgba(255,255,255,.03));color:var(--dsw-alias-label-primary)}',
+      '.dsd-card.dsd-card-collapsed{padding:6px 9px}',
+      '.dsd-card{transition:padding .22s ease}',
+      '.dsd-expand{display:grid;grid-template-rows:1fr;margin-top:7px;transition:grid-template-rows .22s ease,margin-top .22s ease}',
+      '.dsd-expand-collapsed{grid-template-rows:0fr;margin-top:0}',
+      '.dsd-expand-inner{display:flex;flex-direction:column;gap:7px;min-height:0;overflow:hidden}',
+      '.dsd-card{display:flex;flex-direction:column;gap:0;width:100%;min-width:0;padding:9px 9px 7px;border:1px solid var(--dsw-alias-border-l1,rgba(255,255,255,.08));border-radius:12px;background:var(--dsw-alias-bg-layer-1,rgba(255,255,255,.03));color:var(--dsw-alias-label-primary)}',
       '.dsd-head{display:flex;align-items:center;gap:6px;min-width:0}',
-      '.dsd-title{margin:0;font-size:13px;line-height:18px;font-weight:600;color:var(--dsw-alias-label-primary);white-space:nowrap}',
+      '.dsd-head-toggle{display:flex;align-items:center;gap:6px;flex:1;min-width:0;padding:0;margin:0;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}',
+      '.dsd-head-toggle:hover .dsd-title{color:var(--dsw-alias-label-primary)}',
+      '.dsd-head-toggle:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
+      '.dsd-caret{display:inline-flex;flex:none;color:var(--dsw-alias-label-tertiary);transition:transform .15s ease}',
+      '.dsd-caret-open{transform:rotate(90deg)}',
+      '.dsd-title{margin:0;font-size:13px;line-height:18px;font-weight:600;color:var(--dsw-alias-label-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.dsd-mini{display:inline-flex;align-items:center;gap:7px;margin-left:2px;flex:none}',
+      '.dsd-mini-item{display:inline-flex;align-items:center;gap:3px;font-size:10px;line-height:14px;font-weight:600;font-variant-numeric:tabular-nums}',
+      '.dsd-mini-dot{width:5px;height:5px;border-radius:50%;flex:none;background:currentColor}',
+      '.dsd-mini-needs{color:var(--dsw-alias-state-warn-primary)}',
+      '.dsd-mini-running{color:var(--dsw-alias-state-business-primary)}',
+      '.dsd-mini-done{color:var(--dsw-alias-state-success-primary)}',
+      '.dsd-mini-total{font-size:10px;line-height:14px;color:var(--dsw-alias-label-tertiary);font-variant-numeric:tabular-nums}',
       '.dsd-head-actions{display:flex;align-items:center;gap:2px;margin-left:auto}',
       '.dsd-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer}',
       '.dsd-icon-btn:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}',
@@ -491,6 +513,22 @@ window.__ModuleLoader__.load({
         'aria-hidden': 'true',
         focusable: 'false',
       }, h('path', { d: up ? 'M4 10l4-4 4 4' : 'M4 6l4 4 4-4' }))
+    }
+
+    /** Small right-pointing disclosure caret; rotated by CSS when the card is open. */
+    function CaretIcon() {
+      return h('svg', {
+        width: 10,
+        height: 10,
+        viewBox: '0 0 16 16',
+        fill: 'none',
+        stroke: 'currentColor',
+        strokeWidth: 1.8,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round',
+        'aria-hidden': 'true',
+        focusable: 'false',
+      }, h('path', { d: 'M6 3.5l4.5 4.5L6 12.5' }))
     }
 
     /** Rail glyph: an activity pulse, drawn in the collapsed sidebar's icon cell. */
@@ -798,43 +836,85 @@ window.__ModuleLoader__.load({
       }
 
       var expandable = rows.length > LIMIT
-      return h('div', { className: 'dsd-root' },
-        h('div', { className: 'dsd-card' }, [
-          h('div', { key: 'head', className: 'dsd-head' }, [
-            h('h2', { key: 'title', className: 'dsd-title' }, t('title')),
-            h('div', { key: 'actions', className: 'dsd-head-actions' }, [
-              h('button', {
-                key: 'new',
-                type: 'button',
-                className: 'dsd-icon-btn',
-                'aria-label': t('newSession'),
-                title: t('newSession'),
-                onClick: onNewSession,
-              }, h(PlusIcon)),
-            ]),
-          ]),
-          h('div', { key: 'chips', className: 'dsd-chips', role: 'group', 'aria-label': t('filters') },
-            chips.map(function (chip) {
-              return h(FilterChip, {
-                key: chip.key,
-                tone: chip.tone,
-                label: chip.label,
-                count: chip.count,
-                active: filter === chip.key,
-                onSelect: function () { setFilter(chip.key) },
-              })
-            })),
-          h('div', { key: 'list', className: 'dsd-list', role: 'list' }, body),
-          expandable ? h('button', {
-            key: 'more',
+      var collapsed = settings.collapsed === true
+      var collapseLabel = collapsed ? t('expandCard') : t('collapseCard')
+
+      function miniItem(key, tone, value, label) {
+        return h('span', {
+          key: key,
+          className: 'dsd-mini-item dsd-mini-' + tone,
+          title: label + ': ' + value,
+        }, [
+          h('span', { key: 'dot', className: 'dsd-mini-dot' }),
+          String(value),
+        ])
+      }
+
+      var collapsedSummary = []
+      if (counts.needs > 0) collapsedSummary.push(miniItem('needs', 'needs', counts.needs, t('filterNeeds')))
+      if (counts.running > 0) collapsedSummary.push(miniItem('running', 'running', counts.running, t('filterRunning')))
+      if (counts.done > 0) collapsedSummary.push(miniItem('done', 'done', counts.done, t('filterDone')))
+      if (collapsedSummary.length === 0) {
+        collapsedSummary.push(h('span', { key: 'total', className: 'dsd-mini-total' }, String(counts.all)))
+      }
+
+      var children = [
+        h('div', { key: 'head', className: 'dsd-head' }, [
+          h('button', {
+            key: 'toggle',
             type: 'button',
-            className: 'dsd-foot',
-            onClick: function () { setExpanded(!expanded) },
+            className: 'dsd-head-toggle',
+            'aria-label': collapseLabel,
+            'aria-expanded': collapsed ? 'false' : 'true',
+            title: collapseLabel,
+            onClick: function () { writeSettings({ collapsed: !collapsed }) },
           }, [
-            h('span', { key: 'label' }, expanded ? t('collapse') : t('expand')),
-            h(ChevronIcon, { key: 'chevron', up: expanded }),
-          ]) : null,
+            h('span', { key: 'caret', className: collapsed ? 'dsd-caret' : 'dsd-caret dsd-caret-open' }, h(CaretIcon)),
+            h('span', { key: 'title', className: 'dsd-title' }, t('title')),
+            collapsed ? h('span', { key: 'summary', className: 'dsd-mini' }, collapsedSummary) : null,
+          ]),
+          h('div', { key: 'actions', className: 'dsd-head-actions' }, [
+            h('button', {
+              key: 'new',
+              type: 'button',
+              className: 'dsd-icon-btn',
+              'aria-label': t('newSession'),
+              title: t('newSession'),
+              onClick: onNewSession,
+            }, h(PlusIcon)),
+          ]),
         ]),
+      ]
+      children.push(h('div', {
+        key: 'expand',
+        className: collapsed ? 'dsd-expand dsd-expand-collapsed' : 'dsd-expand',
+        'aria-hidden': collapsed ? 'true' : 'false',
+        inert: collapsed ? '' : undefined,
+      }, h('div', { key: 'inner', className: 'dsd-expand-inner' }, [
+        h('div', { key: 'chips', className: 'dsd-chips', role: 'group', 'aria-label': t('filters') },
+          chips.map(function (chip) {
+            return h(FilterChip, {
+              key: chip.key,
+              tone: chip.tone,
+              label: chip.label,
+              count: chip.count,
+              active: filter === chip.key,
+              onSelect: function () { setFilter(chip.key) },
+            })
+          })),
+        h('div', { key: 'list', className: 'dsd-list', role: 'list' }, body),
+        expandable ? h('button', {
+          key: 'more',
+          type: 'button',
+          className: 'dsd-foot',
+          onClick: function () { setExpanded(!expanded) },
+        }, [
+          h('span', { key: 'label' }, expanded ? t('collapse') : t('expand')),
+          h(ChevronIcon, { key: 'chevron', up: expanded }),
+        ]) : null,
+      ])))
+      return h('div', { className: 'dsd-root' },
+        h('div', { className: collapsed ? 'dsd-card dsd-card-collapsed' : 'dsd-card' }, children),
       )
     }
     //#endregion
