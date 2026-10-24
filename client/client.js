@@ -73,6 +73,133 @@ window.__ModuleLoader__.load({
       timeMinutes: '{n}m',
       timeHours: '{n}h',
       timeDays: '{n}d',
+      settingsTitle: 'Sessions card',
+      settingsIntro: 'Sidebar card appearance and behavior.',
+      settingsLanguage: 'Language',
+      settingsRows: 'Default rows',
+      settingsRowsHint: 'Rows shown before expanding; the expanded card shows up to 10.',
+      settingsHint: 'Changes apply immediately.',
+      langEn: 'English',
+      langZh: '中文',
+      rowOption: '{n} rows',
+    }
+
+    var zh = {
+      panel: '会话',
+      title: '会话',
+      newSession: '新建会话',
+      filters: '会话筛选',
+      filterAll: '全部',
+      filterNeeds: '需要你',
+      filterRunning: '运行中',
+      filterDone: '已完成',
+      loading: '加载中…',
+      empty: '暂无会话',
+      noMatches: '没有匹配的会话',
+      seatsUnavailable: '会话卡片不可用：Session 插件未加载',
+      expand: '展开',
+      collapse: '收起',
+      openSession: '打开会话：{title}',
+      railLabel: '会话：{needs} 需要你，{running} 运行中，{done} 已完成',
+      statusApproval: '等待审批',
+      statusPlanReview: '计划待审核',
+      statusAnswer: '等待回答',
+      statusWorkingOn: '正在执行：{task}',
+      statusWorking: '处理中…',
+      statusCompleted: '已完成 · {count} 轮',
+      statusCompletedPlain: '已完成',
+      statusCompletedUnread: '已完成 · {count} 轮 · 未读',
+      statusCompletedUnreadPlain: '已完成 · 未读',
+      statusLastTask: '上次：{task}',
+      statusIdle: '空闲',
+      timeNow: '现在',
+      timeMinutes: '{n}分',
+      timeHours: '{n}时',
+      timeDays: '{n}天',
+      settingsTitle: '会话卡片',
+      settingsIntro: '侧栏卡片的外观与行为。',
+      settingsLanguage: '语言',
+      settingsRows: '默认条目数',
+      settingsRowsHint: '展开前显示的行数；展开后最多 10 行。',
+      settingsHint: '修改立即生效。',
+      langEn: 'English',
+      langZh: '中文',
+      rowOption: '{n} 行',
+    }
+
+    var DICTS = { en: en, zh: zh }
+
+    function formatText(template, vars) {
+      if (vars === undefined) return template
+      return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, function (match, name) {
+        var value = vars[name]
+        return value === undefined ? match : String(value)
+      })
+    }
+
+    function translate(lang, key, vars) {
+      var dict = DICTS[lang] || en
+      var template = dict[key]
+      if (template === undefined) template = en[key]
+      return template === undefined ? key : formatText(template, vars)
+    }
+    //#endregion
+
+    //#region settings store
+    var SETTINGS_KEY = 'dsh-session-dashboard/settings/v1'
+    var ROW_OPTIONS = [3, 5, 8, 10]
+    var DEFAULT_SETTINGS = { lang: 'en', rows: 5 }
+    var settingsListeners = new Set()
+
+    function normalizeRows(value) {
+      var n = Number(value)
+      return ROW_OPTIONS.indexOf(n) === -1 ? DEFAULT_SETTINGS.rows : n
+    }
+
+    function readSettings() {
+      try {
+        var raw = window.localStorage.getItem(SETTINGS_KEY)
+        if (raw === null) return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows }
+        var parsed = JSON.parse(raw)
+        var lang = parsed && parsed.lang === 'zh' ? 'zh' : 'en'
+        return { lang: lang, rows: normalizeRows(parsed && parsed.rows) }
+      } catch (_error) {
+        return { lang: DEFAULT_SETTINGS.lang, rows: DEFAULT_SETTINGS.rows }
+      }
+    }
+
+    function writeSettings(patch) {
+      var next = Object.assign({}, readSettings(), patch)
+      next.rows = normalizeRows(next.rows)
+      next.lang = next.lang === 'zh' ? 'zh' : 'en'
+      try {
+        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+      } catch (_error) {
+        // Storage can be unavailable; the in-memory listeners still update.
+      }
+      settingsListeners.forEach(function (listener) { listener() })
+    }
+
+    function subscribeSettings(listener) {
+      settingsListeners.add(listener)
+      return function () { settingsListeners.delete(listener) }
+    }
+
+    function useCardSettings() {
+      var pair = useState(readSettings)
+      var settings = pair[0]
+      var setSettings = pair[1]
+      useEffect(function () {
+        function update() { setSettings(readSettings()) }
+        var off = subscribeSettings(update)
+        window.addEventListener('storage', update)
+        update()
+        return function () {
+          off()
+          window.removeEventListener('storage', update)
+        }
+      }, [])
+      return settings
     }
     //#endregion
 
@@ -129,6 +256,14 @@ window.__ModuleLoader__.load({
       '.dsd-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-success-primary)}',
       '@keyframes dsd-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
       '@keyframes dsd-sweep{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}',
+      '.dsd-settings{display:flex;flex-direction:column;gap:14px;min-width:0;max-width:520px;padding:4px 0;color:var(--dsw-alias-label-primary);font-size:13px;line-height:18px}',
+      '.dsd-settings-title{margin:0;font-size:15px;line-height:22px;font-weight:600;color:var(--dsw-alias-label-primary)}',
+      '.dsd-settings-intro{margin:0;font-size:12px;line-height:17px;color:var(--dsw-alias-label-tertiary)}',
+      '.dsd-setting{display:flex;align-items:center;gap:12px}',
+      '.dsd-setting-label{flex:none;width:120px;color:var(--dsw-alias-label-secondary)}',
+      '.dsd-select{min-width:160px;padding:4px 8px;border:1px solid var(--dsw-alias-border-l2,rgba(255,255,255,.14));border-radius:6px;background:var(--dsw-alias-bg-layer-2,rgba(255,255,255,.05));color:var(--dsw-alias-label-primary);font:inherit;font-size:13px}',
+      '.dsd-select:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}',
+      '.dsd-settings-hint{margin:0;font-size:12px;line-height:17px;color:var(--dsw-alias-label-tertiary)}',
       // The running glyph is the card's only motion; it keeps spinning even
       // under prefers-reduced-motion because it is the primary state signal
       // requested for active sessions.
@@ -508,14 +643,14 @@ window.__ModuleLoader__.load({
         if (props.wide !== true) return null
         return h('div', { className: 'dsd-root' },
           h('div', { className: 'dsd-card' },
-            h('div', { className: 'dsd-notice' },
-              typeof props.t === 'function' ? props.t('seatsUnavailable') : 'Sessions unavailable')))
+            h('div', { className: 'dsd-notice' }, translate(readSettings().lang, 'seatsUnavailable'))))
       }
       return h(SessionCard, props)
     }
 
     function SessionCard(props) {
-      var t = props.t
+      var settings = useCardSettings()
+      var t = function (key, vars) { return translate(settings.lang, key, vars) }
       var rawListState = props.useSessions(selectAll)
       var listState = isObject(rawListState) ? rawListState : EMPTY_LIST
       var rawStatusMap = props.useSessionStatus(selectAll)
@@ -585,7 +720,7 @@ window.__ModuleLoader__.load({
         })
       }, [rows, filter])
 
-      var LIMIT = 5
+      var LIMIT = settings.rows
       var LIMIT_EXPANDED = 10
       var limit = expanded ? LIMIT_EXPANDED : LIMIT
       var shown = visible.slice(0, limit)
@@ -704,6 +839,44 @@ window.__ModuleLoader__.load({
     }
     //#endregion
 
+    /**
+     * Settings page body: language of the card copy and the number of rows the
+     * collapsed card shows. Stored in this browser's localStorage.
+     */
+    function SettingsPanel() {
+      var settings = useCardSettings()
+      var t = function (key, vars) { return translate(settings.lang, key, vars) }
+      return h('div', { className: 'dsd-settings' }, [
+        h('h3', { key: 'title', className: 'dsd-settings-title' }, t('settingsTitle')),
+        h('p', { key: 'intro', className: 'dsd-settings-intro' }, t('settingsIntro')),
+        h('label', { key: 'language', className: 'dsd-setting' }, [
+          h('span', { key: 'label', className: 'dsd-setting-label' }, t('settingsLanguage')),
+          h('select', {
+            key: 'select',
+            className: 'dsd-select',
+            value: settings.lang,
+            onChange: function (event) { writeSettings({ lang: event.target.value }) },
+          }, [
+            h('option', { key: 'en', value: 'en' }, t('langEn')),
+            h('option', { key: 'zh', value: 'zh' }, t('langZh')),
+          ]),
+        ]),
+        h('label', { key: 'rows', className: 'dsd-setting' }, [
+          h('span', { key: 'label', className: 'dsd-setting-label' }, t('settingsRows')),
+          h('select', {
+            key: 'select',
+            className: 'dsd-select',
+            value: String(settings.rows),
+            onChange: function (event) { writeSettings({ rows: Number(event.target.value) }) },
+          }, ROW_OPTIONS.map(function (n) {
+            return h('option', { key: n, value: String(n) }, t('rowOption', { n: n }))
+          })),
+        ]),
+        h('p', { key: 'rowsHint', className: 'dsd-settings-intro' }, t('settingsRowsHint')),
+        h('p', { key: 'hint', className: 'dsd-settings-hint' }, t('settingsHint')),
+      ])
+    }
+
     //#region plugin
     var ENTRY_ID = 'session-dashboard'
 
@@ -726,8 +899,20 @@ window.__ModuleLoader__.load({
       }, 'dsh-session-dashboard: styles')
 
       ctx.effect(function () {
-        return ctx.locale.register(NS, { zh: en, en: en })
+        return ctx.locale.register(NS, { zh: zh, en: en })
       }, 'dsh-session-dashboard: dictionaries')
+
+      var navT = ctx.locale.bind(NS)
+
+      ctx.slots.inject('settings.section', function () {
+        return ctx.slots.register({
+          name: 'settings.section',
+          id: ENTRY_ID,
+          order: 30,
+          locale: NS,
+          label: function () { return navT('settingsTitle') },
+        }, SettingsPanel)
+      })
 
       ctx.slots.inject('sidebar.footer.action', function () {
         return ctx.slots.register({

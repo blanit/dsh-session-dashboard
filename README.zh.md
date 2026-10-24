@@ -11,6 +11,7 @@ DeepSeek Harness Web GUI 插件：在**左侧边栏常驻一张会话状态卡�
 - 筛选 All / Needs you / Running / Done，带实时计数；切换筛选时卡片高度保持不变
 - 点击任意行进入该会话；`+` 新建会话
 - 默认展示 5 行，可展开到 10 行
+- 设置 → Sessions card 侧栏页：卡片语言（English / 中文）与默认条目数
 - 需要你、运行中、完成未查看的会话优先展示；运行中的行带扫光动效
 
 ![侧栏常驻卡片（示例数据）](docs/sidebar-card.png)

@@ -11,6 +11,7 @@ English | [中文](README.zh.md)
 - Filters All / Needs you / Running / Done with live counts; the card keeps the same height when switching filters
 - Click a row to open that session; `+` starts a new session
 - 5 rows by default, expandable to 10
+- Settings → Sessions card section: card language (English / 中文) and default row count
 - Needs-you, running and unread-completed sessions are listed first; running rows have a sweep animation
 
 ![Sidebar card (sample data)](docs/sidebar-card.png)
