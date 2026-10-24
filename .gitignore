@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+
+# 打包/发布产物
+*.tgz
+*.log
+
+# 本地/插件管理器备份
+*.bak-*
+*.pre-pnpm-*
+
+# 编辑器与系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

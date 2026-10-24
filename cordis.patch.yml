@@ -1,0 +1,6 @@
+# Bundle patch for dsh-session-dashboard.
+# Inserting the package as a Loader entry is what lets client-modules discover
+# its `dsh.client` declaration and serve client/client.js to the Web GUI.
+- insert:
+    - id: dsh-session-dashboard
+      name: 'dsh-session-dashboard'

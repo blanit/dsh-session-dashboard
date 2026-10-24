@@ -1,0 +1,51 @@
+{
+  "name": "dsh-session-dashboard",
+  "version": "0.1.2",
+  "description": "Always-visible Session status card in the DeepSeek Harness Web GUI left sidebar: recent Sessions, Needs you / Running filters, and one-click navigation.",
+  "type": "module",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "icon": "icon.svg",
+  "engines": {
+    "dsh": ">=0.2.0 <0.3.0"
+  },
+  "files": [
+    "lib",
+    "client",
+    "cordis.patch.yml",
+    "icon.svg",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-workspace"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "sessions",
+    "dashboard"
+  ]
+}
