@@ -256,6 +256,9 @@ window.__ModuleLoader__.load({
       '.dsd-row-running > *{position:relative;z-index:1}',
       '.dsd-row-done{background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 7%,transparent)}',
       '.dsd-row:hover{background:var(--dsw-alias-interactive-bg-hover)}',
+      '.dsd-row.is-current{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 14%,transparent)}',
+      '.dsd-row.is-current:hover{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 20%,transparent)}',
+      '.dsd-row.is-current .dsd-row-title{font-weight:600}',
       '.dsd-row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}',
       '.dsd-status{display:flex;align-items:center;justify-content:center;width:16px;height:16px;margin-top:1px}',
       '.dsd-status svg{display:block}',
@@ -314,6 +317,22 @@ window.__ModuleLoader__.load({
     /** Stable selector: the card renders from whole snapshots. */
     function selectAll(value) {
       return value
+    }
+
+    /** Match the host sidebar: only the visible main view is current. */
+    function currentSessionIdOf(listState, panelActive) {
+      if (panelActive) return undefined
+      var byId = listState.byId || {}
+      var ids = Object.keys(byId)
+      for (var index = 0; index < ids.length; index += 1) {
+        var session = byId[ids[index]]
+        if (isObject(session) && isObject(session.retainedBy) && session.retainedBy.mainView > 0) return session.id
+      }
+      return undefined
+    }
+
+    function selectPanelActive(info) {
+      return info.activePanelId !== null
     }
 
     /** A wall clock sampled on an interval so relative times stay fresh. */
@@ -633,9 +652,10 @@ window.__ModuleLoader__.load({
       var t = props.t
       return h('button', {
         type: 'button',
-        className: 'dsd-row dsd-row-' + row.tone,
+        className: 'dsd-row dsd-row-' + row.tone + (props.current ? ' is-current' : ''),
         title: t('openSession', { title: row.title }),
         'aria-label': t('openSession', { title: row.title }),
+        'aria-current': props.current ? 'true' : undefined,
         onClick: function () { props.onOpen(row.id) },
       }, [
         h(StatusIcon, { key: 'status', tone: row.tone }),
@@ -677,6 +697,7 @@ window.__ModuleLoader__.load({
       var available = typeof props.useSessions === 'function'
         && typeof props.useSessionStatus === 'function'
         && typeof props.useWorkspaces === 'function'
+        && typeof props.usePanelInfo === 'function'
       if (!available) {
         if (props.wide !== true) return null
         return h('div', { className: 'dsd-root' },
@@ -691,6 +712,8 @@ window.__ModuleLoader__.load({
       var t = function (key, vars) { return translate(settings.lang, key, vars) }
       var rawListState = props.useSessions(selectAll)
       var listState = isObject(rawListState) ? rawListState : EMPTY_LIST
+      var panelActive = props.usePanelInfo(selectPanelActive)
+      var currentSessionId = currentSessionIdOf(listState, panelActive)
       var rawStatusMap = props.useSessionStatus(selectAll)
       var statusMap = isObject(rawStatusMap) ? rawStatusMap : EMPTY_STATUS
       var rawWorkspaces = props.useWorkspaces(selectAll)
@@ -824,7 +847,7 @@ window.__ModuleLoader__.load({
         body = h('div', { className: 'dsd-notice', role: 'status' }, t('empty'))
       } else {
         var items = shown.map(function (row) {
-          return h(CompactRow, { key: row.id, row: row, now: now, t: t, onOpen: onOpen })
+          return h(CompactRow, { key: row.id, row: row, current: row.id === currentSessionId, now: now, t: t, onOpen: onOpen })
         })
         for (var slot = shown.length; slot < slots; slot += 1) {
           items.push(h(FillerRow, { key: 'slot-' + slot }))
